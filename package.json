@@ -17,6 +17,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "coverage": "c8 node --test"
+  },
+  "devDependencies": {
+    "c8": "10.1.3"
   }
 }

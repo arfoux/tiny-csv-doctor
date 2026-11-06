@@ -1,0 +1,67 @@
+name: Dependency bump
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: branch name
+        default: automation/bump-dev-dep
+      open_pr:
+        description: open a pull request
+        type: choice
+        options: [bot, none]
+        default: bot
+      method:
+        description: merge method
+        type: choice
+        options: [squash, merge]
+        default: squash
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    name: bump dev dependency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: bump, commit, push
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          node scripts/bump-dev-dep.mjs
+          git config user.name "renovate[bot]"
+          git config user.email "29139614+renovate[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add package.json
+          git commit -m "chore(deps): bump dev dependency"
+          git push -u origin "$BRANCH"
+          git log -1 --pretty='author=%an <%ae> committer=%cn <%ce>'
+      - name: open pull request
+        if: inputs.open_pr == 'bot'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore(deps): bump dev dependency" \
+            --body "Automated dev-dependency bump."
+      - name: merge
+        if: inputs.open_pr == 'bot'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ inputs.branch }}
+          METHOD: ${{ inputs.method }}
+        run: |
+          number=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
+          for attempt in 1 2 3 4 5 6; do
+            if gh pr merge "$number" --"$METHOD"; then break; fi
+            sleep 6
+          done
+          gh pr view "$number" --json state,mergedBy,mergeCommit
