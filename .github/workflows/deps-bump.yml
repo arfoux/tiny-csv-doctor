@@ -5,6 +5,12 @@ on:
       branch:
         description: branch name
         default: automation/bump-dev-dep
+      author_name:
+        description: commit author name
+        default: renovate[bot]
+      author_email:
+        description: commit author email
+        default: 29139614+renovate[bot]@users.noreply.github.com
       open_pr:
         description: open a pull request
         type: choice
@@ -34,10 +40,12 @@ jobs:
       - name: bump, commit, push
         env:
           BRANCH: ${{ inputs.branch }}
+          AUTHOR_NAME: ${{ inputs.author_name }}
+          AUTHOR_EMAIL: ${{ inputs.author_email }}
         run: |
           node scripts/bump-dev-dep.mjs
-          git config user.name "renovate[bot]"
-          git config user.email "29139614+renovate[bot]@users.noreply.github.com"
+          git config user.name "$AUTHOR_NAME"
+          git config user.email "$AUTHOR_EMAIL"
           git checkout -b "$BRANCH"
           git add package.json
           git commit -m "chore(deps): bump dev dependency"
