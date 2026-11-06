@@ -19,7 +19,7 @@ on:
       method:
         description: merge method
         type: choice
-        options: [squash, merge]
+        options: [squash, merge, rebase]
         default: squash
 
 permissions:
