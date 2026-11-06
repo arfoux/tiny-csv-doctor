@@ -1,0 +1,22 @@
+{
+  "name": "tiny-csv-doctor",
+  "version": "0.3.1",
+  "description": "Zero-dependency CSV header/row validator",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "csv-doctor": "./src/index.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
